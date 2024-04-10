@@ -4,7 +4,7 @@ public class Main {
 
         Test t = new Test();
 
-        t.createGaussianIntegral();
+        //t.createGaussianIntegral();
         t.createPolynomial();
 
     }

@@ -1,76 +1,69 @@
 import java.util.ArrayList;
 
 public class Polynomials {
-    public Polynomial[] divide(Polynomial f, Polynomial g){
-        Polynomial q = new Polynomial(f.coefficients.size());
+    public Polynomial[] divide(Polynomial f, Polynomial g) {
 
-        int itr = 0;
-        while(g.coefficients.get(itr) == 0){
-            itr++;
-        }
-        float leading = g.coefficients.get(itr);
-        int size = g.coefficients.size();
+        ArrayList<Double> temp = new ArrayList<>(f.coefficients);
+        Polynomial q = new Polynomial();
+        Polynomial r = new Polynomial(temp);
 
-        int i = 0;
-        int qItr = size - 1;
-        int rItr = 0;
-        Polynomial gCopy;
-        while(f.coefficients.get(0) != 0 && f.coefficients.get(0) % leading == 0.0f){
-            if(g.coefficients.get(0) == 0.0f){
-                q.coefficients.set(qItr, 0.0f);
-                for(int j = 0; j < size - 1; j++){
-                    g.coefficients.set(j, g.coefficients.get(j+1));
-                }
-                g.coefficients.set(size - 1, 0.0f);
-                qItr--;
+        int divisorDeg = g.coefficients.size() - 1;
+
+        while (r.coefficients.size() >= g.coefficients.size()) {
+            double leading = r.coefficients.get(0) / g.coefficients.get(0);
+
+            q.coefficients.add(leading);
+
+            for(int i = 0; i <= divisorDeg; i++) {
+                double val = r.coefficients.get(i);
+                double sub = leading * g.coefficients.get(i);
+
+                r.coefficients.set(i, val - sub);
             }
-            else {
-                q.coefficients.set(qItr, f.coefficients.get(0) / leading);
-                gCopy = multiply(g, q.coefficients.get(qItr));
-                qItr++;
 
-                for(int k = 0; k < size; k++) {
-                    f.coefficients.set(k, f.coefficients.get(k) - gCopy.coefficients.get(k));
-                }
-
-                if(rItr == size - itr - 1) break;
-
-                i++;
-                if(f.coefficients.get(i) != 0 && f.coefficients.get(i) % leading == 0.0f ) {
-                    for (int j = 0; j < size - 1; j++) {
-                        f.coefficients.set(j, f.coefficients.get(j + 1));
-                    }
-                    f.coefficients.set(size - 1, 0.0f);
-                    i--;
-                    rItr++;
-                }
+            while(!r.coefficients.isEmpty() && r.coefficients.get(0) == 0.0) {
+                r.coefficients.remove(0);
             }
         }
-        while(rItr != 0){
-            for (int j = size - 1; j > 0; j--) {
-                f.coefficients.set(j, f.coefficients.get(j - 1));
-            }
-            f.coefficients.set(0, 0.0f);
-            rItr--;
-        }
 
-        return new Polynomial[]{q, f};
+        Polynomial[] res = new Polynomial[2];
+
+        res[0] = q;
+        res[1] = r;
+
+        return res;
     }
 
     public Polynomial gcd(Polynomial f, Polynomial g) {
-        return f;
+        Polynomial[] divisionResult = divide(f, g);
+        if (divisionResult[1].coefficients.isEmpty()) {
+            return g;
+        } else {
+            return gcd(g, divisionResult[1]);
+        }
     }
     public Polynomial lcm(Polynomial f, Polynomial g){
-        return g;
+        Polynomial gcd = gcd(f, g);
+        Polynomial m = multiply(f, g);
+
+        Polynomial[] divisionResult = divide(m, gcd);
+
+        return divisionResult[0];
     }
 
-    private Polynomial multiply(Polynomial h, float x){
-        Polynomial temp = new Polynomial(h.coefficients.size());
-        for(int i = 0; i < h.coefficients.size(); i++){
-            temp.coefficients.set(i, h.coefficients.get(i));
+    private Polynomial multiply(Polynomial f, Polynomial g){
+        Polynomial temp = new Polynomial();
+        for(int i = 0; i < f.coefficients.size()+g.coefficients.size(); i++) {
+            temp.coefficients.add(0.0);
         }
-        temp.coefficients.replaceAll(aFloat -> aFloat * x);
+        double a, b;
+        for(int i = 0; i < f.coefficients.size(); i++){
+            for(int j = 0; j < g.coefficients.size(); j++){
+                a = f.coefficients.get(i);
+                b = g.coefficients.get(j);
+                temp.coefficients.set(i + j, temp.coefficients.get(i + j) + (a * b));
+            }
+        }
         return temp;
     }
-
 }
